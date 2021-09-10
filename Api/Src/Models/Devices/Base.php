@@ -5,7 +5,6 @@ namespace MTM\SMSApi\Models\Devices;
 abstract class Base extends \MTM\SMSApi\Models\Base
 {
 	protected $_hostName=null;
-	protected $_msgObjs=array();
 	protected $_contactObjs=array();
 	
 	public function setHost($hostname)
@@ -17,26 +16,20 @@ abstract class Base extends \MTM\SMSApi\Models\Base
 	{
 		return $this->_hostName;
 	}
+	public function getContacts()
+	{
+		return array_values($this->_contactObjs);
+	}
 	public function addContact($obj)
 	{
-		foreach ($this->getContacts() as $contactObj) {
-			if ($contactObj === $obj) {
-				return $this;
-			}
-		}
-		$obj->setApi($this);
-		$this->_contactObjs[]	= $obj;
+		$this->_contactObjs[$obj->getNumber()]	= $obj;
 		return $this;
-	}
-	public function &getContacts()
-	{
-		return $this->_contactObjs;
 	}
 	public function getContactByNumber($nbr, $throw=false)
 	{
-		foreach ($this->getContacts() as $contactObj) {
-			if ($contactObj->getNumber() === $nbr) {
-				return $contactObj;
+		foreach ($this->_contactObjs as $cNbr => $cObj) {
+			if ($cNbr === $nbr) {
+				return $cObj;
 			}
 		}
 		if ($throw === true) {
