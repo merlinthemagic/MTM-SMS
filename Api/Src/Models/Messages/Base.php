@@ -6,6 +6,7 @@ abstract class Base extends \MTM\SMSApi\Models\Base
 {
 	protected $_msgId=null;
 	protected $_senderObj=null;
+	protected $_recvObj=null;
 	protected $_content=null;
 	
 	public function getId()
@@ -17,6 +18,15 @@ abstract class Base extends \MTM\SMSApi\Models\Base
 		$this->_msgId = $id;
 		return $this;
 	}
+	public function getContent()
+	{
+		return $this->_content;
+	}
+	public function setContent($data)
+	{
+		$this->_content = $data;
+		return $this;
+	}
 	public function getSender()
 	{
 		return $this->_senderObj;
@@ -26,13 +36,13 @@ abstract class Base extends \MTM\SMSApi\Models\Base
 		$this->_senderObj = $obj;
 		return $this;
 	}
-	public function getContent()
+	public function getReceiver()
 	{
-		return $this->_content;
+		return $this->_recvObj;
 	}
-	public function setContent($data)
+	public function setReceiver($obj)
 	{
-		$this->_content = $data;
+		$this->_recvObj = $obj;
 		return $this;
 	}
 }

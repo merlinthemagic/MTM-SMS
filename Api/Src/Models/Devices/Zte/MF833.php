@@ -13,6 +13,17 @@ class MF833 extends Base
 		$cObj->setUrl($url);
 		return $cObj->execute();
 	}
+	public function getSelfContact()
+	{
+		$nbr			= "+".$this->getMsIsdn();
+		$contactObj		= $this->getContactByNumber($nbr, false);
+		if ($contactObj === null) {
+			$contactObj			= new \MTM\SMSApi\Models\Contacts\Senders\V1();
+			$contactObj->setNumber($nbr);
+			$this->addContact($contactObj);
+		}
+		return $contactObj;
+	}
 	public function getMessages()
 	{
 		##TODO: paginate
@@ -27,6 +38,8 @@ class MF833 extends Base
 		}
 		foreach ($rData->messages as $dataObj) {
 			
+			echo print_r($dataObj, true)."\n\n";
+			
 			if ($dataObj instanceof \stdClass === false) {
 				throw new \Exception("Message is not standard class");
 			} elseif (property_exists($dataObj, "id") === false) {
@@ -35,9 +48,40 @@ class MF833 extends Base
 				throw new \Exception("Message does not have number");
 			} elseif (property_exists($dataObj, "content") === false) {
 				throw new \Exception("Message does not have content");
+			} elseif (property_exists($dataObj, "tag") === false) {
+				throw new \Exception("Message does not have a tag");
+			} elseif (property_exists($dataObj, "date") === false) {
+				throw new \Exception("Message does not have date");
 			}
+			
 			$id	= intval($dataObj->id);
 			if (array_key_exists($id, $this->_msgObjs) === false) {
+				
+				$contactObj	= $this->getContactByNumber($dataObj->number, false);
+				if ($contactObj === null) {
+					$contactObj			= new \MTM\SMSApi\Models\Contacts\V1();
+					$contactObj->setNumber($dataObj->number);
+					$this->addContact($contactObj);
+				}
+				
+				if ($dataObj->tag === 0) {
+					//we are receiving this message
+					$msgObj		= new \MTM\SMSApi\Models\Messages\Ingress\V1();
+					$msgObj->setSender($contactObj);
+					$msgObj->setReceiver($this->getSelfContact());
+					
+				} else {
+					//we sent this message
+					$msgObj		= new \MTM\SMSApi\Models\Messages\Egress\V1();
+					$msgObj->setSender($this->getSelfContact());
+					$msgObj->setReceiver($contactObj);
+				}
+				
+				$msgObj->setId($id);
+				
+				
+				//21,09,10,12,49,12,+4
+				//$date = gmdate("y;m;d;H;i;s;".$this->_tz,time()+($this->_tz*3600));
 				
 				//Decode the message string
 				$len	= strlen($dataObj->content) / 4;
@@ -45,15 +89,7 @@ class MF833 extends Base
 				for ($x=0; $x < $len; $x++) {
 					$data	.= html_entity_decode("&#" . hexdec(substr($dataObj->content, ($x * 4), 4)) . ";", ENT_NOQUOTES, "UTF-8");
 				}
-				$msgObj					= new \MTM\SMSApi\Models\Messages\Ingress\V1();
-				$msgObj->setId($id)->setContent($data);
-				$contactObj				= $this->getContactByNumber($dataObj->number, false);
-				if ($contactObj === null) {
-					$contactObj			= new \MTM\SMSApi\Models\Contacts\Senders\V1();
-					$contactObj->setNumber($dataObj->number);
-					$this->addContact($contactObj);
-				}
-				$msgObj->setSender($contactObj);
+				$msgObj->setContent($data);
 				$this->_msgObjs[$id]	= $msgObj;
 			}
 		}
@@ -124,4 +160,22 @@ class MF833 extends Base
 		}
 		return intval($rData->lte_rsrp);
 	}
+	public function getMsIsdn()
+	{
+		//Phone number
+		//Src: https://www.wirelesslogic.com/iot-glossary/what-is-msisdn/
+		$qStr		= "goform/goform_get_cmd_process/?isTest=false&cmd=msisdn&multi_data=1";
+		$jsonData	= $this->exeRequest($qStr);
+		$rData		= json_decode($jsonData);
+		if (
+			$rData instanceof \stdClass === false
+			|| property_exists($rData, "msisdn") === false
+		) {
+			throw new \Exception("Invalid json return:".$jsonData);
+		}
+		return $rData->msisdn;
+	}
+	
+	
+	//http://192.168.0.1/goform/goform_get_cmd_process?isTest=false&cmd=apn_interface_version%2Cwifi_coverage%2Cm_ssid_enable%2Cimei%2Cwan_active_band%2Cnetwork_type%2Crssi%2Crscp%2Clte_rsrp%2Cimsi%2Csim_imsi%2Ccr_version%2Cwa_version%2Chardware_version%2Cweb_version%2Cwa_inner_version%2CMAX_Access_num%2CSSID1%2CAuthMode%2CWPAPSK1_encode%2Cm_SSID%2Cm_AuthMode%2Cm_HideSSID%2Cm_WPAPSK1_encode%2Cm_MAX_Access_num%2Clan_ipaddr%2Cmac_address%2Cmsisdn%2CLocalDomain%2Cwan_ipaddr%2Cstatic_wan_ipaddr%2Cipv6_wan_ipaddr%2Cipv6_pdp_type%2Cipv6_pdp_type_ui%2Cpdp_type%2Cpdp_type_ui%2Copms_wan_mode%2Cppp_status&multi_data=1&_=1631284031094
 }
