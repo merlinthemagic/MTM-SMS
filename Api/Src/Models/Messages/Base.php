@@ -5,6 +5,7 @@ namespace MTM\SMSApi\Models\Messages;
 abstract class Base extends \MTM\SMSApi\Models\Base
 {
 	protected $_msgId=null;
+	protected $_time=null;
 	protected $_senderObj=null;
 	protected $_recvObj=null;
 	protected $_content=null;
@@ -25,6 +26,15 @@ abstract class Base extends \MTM\SMSApi\Models\Base
 	public function setContent($data)
 	{
 		$this->_content = $data;
+		return $this;
+	}
+	public function getTime()
+	{
+		return $this->_time;
+	}
+	public function setTime($epoch)
+	{
+		$this->_time = $epoch;
 		return $this;
 	}
 	public function getSender()

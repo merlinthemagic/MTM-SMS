@@ -36,9 +36,9 @@ class MF833 extends Base
 		) {
 			throw new \Exception("Invalid json return:".$jsonData);
 		}
+		$tFormat	= "Y-m-d H:i:s";
+		$timeTool	= \MTM\Utilities\Factories::getTime()->getUnixEpochTool();
 		foreach ($rData->messages as $dataObj) {
-			
-			echo print_r($dataObj, true)."\n\n";
 			
 			if ($dataObj instanceof \stdClass === false) {
 				throw new \Exception("Message is not standard class");
@@ -79,10 +79,12 @@ class MF833 extends Base
 				
 				$msgObj->setId($id);
 				
-				
-				//21,09,10,12,49,12,+4
-				//$date = gmdate("y;m;d;H;i;s;".$this->_tz,time()+($this->_tz*3600));
-				
+				//Set the time
+				$tps		= explode(",", $dataObj->date);
+				$inTime		= "20".$tps[0]."-".$tps[1]."-".$tps[2]." ".$tps[3].":".$tps[4].":".$tps[5];
+				$time		= $timeTool->getFromUtcByFormat($inTime, $tFormat);
+				$msgObj->setTime($time);
+
 				//Decode the message string
 				$len	= strlen($dataObj->content) / 4;
 				$data	= "";
