@@ -64,7 +64,7 @@ class MF833 extends Base
 					$this->addContact($contactObj);
 				}
 				
-				if ($dataObj->tag === 0) {
+				if ($dataObj->tag == 0) {
 					//we are receiving this message
 					$msgObj		= new \MTM\SMSApi\Models\Messages\Ingress\V1();
 					$msgObj->setSender($contactObj);
