@@ -74,7 +74,7 @@ class V1 extends Base
 			
 			//Locate the sent message
 			$curId		= 0;
-			$tTime		= time() + 5;
+			$tTime		= time() + 10;
 			while (true) {
 				usleep(250000);
 				$apiObj->getMessages();
