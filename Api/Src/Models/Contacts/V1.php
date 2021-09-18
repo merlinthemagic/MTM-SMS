@@ -88,7 +88,6 @@ class V1 extends Base
 						if (
 							$msgObj->getId() > $lastId
 							&& $msgObj->getReceiver()->getNumber() == $recvObj->getNumber()
-							&& $msgObj->getContent() == $str
 						) {
 							return $msgObj;
 						}
