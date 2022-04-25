@@ -13,6 +13,7 @@ class V1 extends Base
 	}
 	public function sendText($nbr, $str)
 	{
+		//this needs to move to the device obj
 		$apiObj		= $this->getApi();
 		$recvObj	= $apiObj->getContactByNumber($nbr, false);
 		if ($recvObj === null) {

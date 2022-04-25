@@ -14,5 +14,10 @@
 		"php" : ">=7.3.0",
 		"merlinthemagic/mtm-http" : ">=1.0.2"
 	},
+	"autoload" : {
+		"files" : [
+			"./Src/Enable.php"
+		]
+	},
 	"minimum-stability" : "dev"
 }
